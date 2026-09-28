@@ -5,6 +5,8 @@ import '../../features/accounts/presentation/screens/accounts_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_screen.dart';
 import '../../features/automation/presentation/screens/automation_screen.dart';
 import '../../features/automation/presentation/screens/inbox_review_screen.dart';
+import '../../features/automation/presentation/screens/android_setup_guide_screen.dart';
+import '../../features/automation/presentation/screens/ios_setup_guide_screen.dart';
 import '../../features/auth/presentation/controllers/auth_providers.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
@@ -56,6 +58,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/budgets', builder: (context, state) => const BudgetsScreen()),
       GoRoute(path: '/automation', builder: (context, state) => const AutomationScreen()),
       GoRoute(path: '/automation/inbox', builder: (context, state) => const InboxReviewScreen()),
+      GoRoute(path: '/automation/ios-setup', builder: (context, state) => const IosSetupGuideScreen()),
+      GoRoute(path: '/automation/android-setup', builder: (context, state) => const AndroidSetupGuideScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => RootShell(navigationShell: navigationShell),
         branches: [

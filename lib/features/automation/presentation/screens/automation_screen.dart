@@ -209,17 +209,13 @@ class AutomationScreen extends ConsumerWidget {
                   leading: const Icon(Icons.phone_iphone),
                   title: const Text('iOS Shortcuts setup'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Setup guide arrives in Phase 6')),
-                  ),
+                  onTap: () => context.push('/automation/ios-setup'),
                 ),
                 ListTile(
                   leading: const Icon(Icons.android),
                   title: const Text('Android MacroDroid setup'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Setup guide arrives in Phase 7')),
-                  ),
+                  onTap: () => context.push('/automation/android-setup'),
                 ),
               ],
             ),

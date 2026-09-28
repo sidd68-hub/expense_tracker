@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/automation/presentation/controllers/automation_providers.dart';
 import '../../features/budgets/presentation/controllers/budget_notification_provider.dart';
 import 'app_bootstrap.dart';
+import 'deep_link_provider.dart';
 
 /// Bottom-nav shell wrapping Dashboard / Transactions / Analytics / Settings,
 /// per the navigation structure in the architecture proposal.
@@ -21,6 +22,8 @@ class RootShell extends ConsumerWidget {
     ref.watch(budgetNotificationEffectProvider);
     // Auto-commits fully-resolved automation inbox entries when Automatic Mode is on.
     ref.watch(inboxAutoProcessEffectProvider);
+    // Routes expensetracker:// deep links (Shortcuts, Quick Launch, notifications).
+    ref.watch(deepLinkServiceProvider);
 
     return Scaffold(
       body: navigationShell,
