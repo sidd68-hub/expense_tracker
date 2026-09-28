@@ -1,0 +1,101 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Transactions are the only collection automation/clients can create
+    // directly with meaningful field constraints — everything else just
+    // needs uid ownership since it's low-risk metadata (categories, accounts,
+    // settings). Automation-originated writes go through the ingestion
+    // Cloud Function (Admin SDK, bypasses these rules by design) rather than
+    // through this client path.
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['type', 'amountMinor', 'currency', 'date', 'source', 'status', 'isDeleted'])
+        && data.type in ['expense', 'income', 'transfer']
+        && data.amountMinor is int
+        && data.amountMinor > 0
+        && data.currency is string
+        && data.date is timestamp
+        && data.source in ['manual', 'iosShortcut', 'androidMacrodroid', 'api']
+        && data.status in ['pending', 'confirmed', 'synced', 'failed', 'duplicate']
+        && data.isDeleted is bool;
+    }
+
+    // Untrusted, unauthenticated automation input (iOS Shortcuts, MacroDroid)
+    // lands here — never directly in transactions. Gated only by a random
+    // per-user token (stored in the user's own settings doc), since
+    // automation clients can't run an interactive Firebase Auth sign-in.
+    // Guessing the token is the only way in, and even then the blast radius
+    // is limited to creating inbox entries the user reviews before they
+    // become real transactions (rule #16, #21) — never read/update/delete.
+    function isValidInboxEntry(data) {
+      return data.keys().hasAll(['token', 'amount', 'type', 'createdAt'])
+        && data.token is string
+        && data.amount is int
+        && data.amount > 0
+        && data.type in ['expense', 'income', 'transfer']
+        && data.createdAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /automation_inbox/{inboxId} {
+        allow read, update, delete: if isOwner(uid);
+        allow create: if isValidInboxEntry(request.resource.data)
+          && request.resource.data.token == get(/databases/$(database)/documents/users/$(uid)/settings/preferences).data.automationToken;
+      }
+
+      match /transactions/{transactionId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && isValidTransaction(request.resource.data);
+        allow update: if isOwner(uid) && isValidTransaction(request.resource.data);
+        allow delete: if false; // use soft delete (isDeleted: true) instead
+      }
+
+      match /categories/{categoryId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /accounts/{accountId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /budgets/{budgetId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /recurring_transactions/{recurringId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      match /settings/{settingId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // automation_tokens and transaction_idempotency are only ever
+      // read/written by the Cloud Function via the Admin SDK, which
+      // bypasses these rules — deny direct client access entirely.
+      match /automation_tokens/{tokenId} {
+        allow read, write: if false;
+      }
+
+      match /transaction_idempotency/{key} {
+        allow read, write: if false;
+      }
+
+      match /monthly_summaries/{monthKey} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+  }
+}

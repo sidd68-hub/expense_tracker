@@ -1,0 +1,39 @@
+{
+  "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "expense-tracker-sid",
+          "appId": "1:13403808730:android:916a6c3594067b1e3596e3",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "expense-tracker-sid",
+          "appId": "1:13403808730:ios:a2f3eace1f7515a33596e3",
+          "uploadDebugSymbols": true,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "expense-tracker-sid",
+          "configurations": {
+            "android": "1:13403808730:android:916a6c3594067b1e3596e3",
+            "ios": "1:13403808730:ios:a2f3eace1f7515a33596e3"
+          }
+        }
+      }
+    }
+  }
+}
